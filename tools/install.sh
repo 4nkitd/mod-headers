@@ -11,8 +11,7 @@ CYAN="$(tput setaf 6 2>/dev/null || echo '')"
 RED="$(tput setaf 1 2>/dev/null || echo '')"
 RESET="$(tput sgr0 2>/dev/null || echo '')"
 
-EXT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-MANIFEST="$EXT_DIR/manifest.json"
+REPO_URL="https://github.com/4nkitd/mod-headers.git"
 LOAD_TEMP=false
 
 if [[ "${1:-}" == "--load-temp" ]]; then
@@ -39,8 +38,38 @@ case "$UNAME" in
   *)       OS="unknown";;
 esac
 
-log "detected OS: ${BOLD}$OS${RESET}"
-log "extension path: $EXT_DIR"
+# ── Resolve extension directory ────────────────────────────────
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo '')"
+
+if [[ -n "$SCRIPT_DIR" && -f "$SCRIPT_DIR/../manifest.json" ]]; then
+  # running locally from inside the repo
+  EXT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+  MANIFEST="$EXT_DIR/manifest.json"
+  log "detected OS: ${BOLD}$OS${RESET}"
+  log "using local checkout: $EXT_DIR"
+elif [[ -f /dev/stdin || "$0" == "bash" || "$0" == "/dev/stdin" || -z "${0##*pipe*}" || ! -f "$0" ]]; then
+  # running via curl pipe — clone the repo
+  log "detected OS: ${BOLD}$OS${RESET}"
+  log "running via curl pipe — cloning $REPO_URL ..."
+  if ! command -v git &>/dev/null; then
+    die "git is required. Install git and try again."
+  fi
+  EXT_DIR="$(mktemp -d 2>/dev/null || echo "/tmp/mod-headers-$$")"
+  if [[ "$EXT_DIR" != "/tmp/mod-headers-$$" ]]; then
+    git clone --depth 1 "$REPO_URL" "$EXT_DIR" 2>&1 | tail -1
+  else
+    rm -rf "$EXT_DIR"
+    git clone --depth 1 "$REPO_URL" "$EXT_DIR" 2>&1 | tail -1
+  fi
+  MANIFEST="$EXT_DIR/manifest.json"
+  [[ -f "$MANIFEST" ]] || die "clone succeeded but manifest.json is missing"
+else
+  EXT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+  MANIFEST="$EXT_DIR/manifest.json"
+  log "detected OS: ${BOLD}$OS${RESET}"
+  log "extension path: $EXT_DIR"
+fi
 
 [[ -f "$MANIFEST" ]] || die "manifest.json not found at $MANIFEST"
 

@@ -44,19 +44,38 @@ Import/export your rule set as JSON from the **⋮** menu.
 
 ## Install
 
-### Auto-install (all browsers, all OSes)
+### One-liner
+
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/4nkitd/mod-headers/main/tools/install.sh | bash
+
+# macOS / Linux — temporary load (gone after browser quits)
+curl -fsSL https://raw.githubusercontent.com/4nkitd/mod-headers/main/tools/install.sh | bash -s -- --load-temp
+```
+
+```powershell
+# Windows PowerShell
+iex "& { $(irm https://raw.githubusercontent.com/4nkitd/mod-headers/main/tools/install.ps1) }"
+```
+
+```cmd
+:: Windows CMD — opens browser extension pages (requires Git Bash)
+curl -fsSL https://raw.githubusercontent.com/4nkitd/mod-headers/main/tools/install.sh | bash
+```
+
+### From local checkout
 
 ```bash
 bash tools/install.sh
+# or temp load:
+bash tools/install.sh --load-temp
 ```
 
 Detects your OS and installed browsers (Chrome, Edge, Brave, Opera, Arc,
-Vivaldi, Chromium, Firefox, Firefox Dev) and opens each to the right page.
-
-For a one-shot temp load (gone after browser quit):
-```bash
-bash tools/install.sh --load-temp
-```
+Vivaldi, Chromium, Firefox, Firefox Dev) — opens each to the right page
+and prints instructions. When piped via curl the script clones the repo
+automatically.
 
 ### Manual (unpacked)
 
