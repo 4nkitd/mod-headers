@@ -16,7 +16,23 @@ Built on Chrome's modern `declarativeNetRequest` API (Manifest V3).
 - **Light + dark theme** (follows system)
 - **Keyboard**: `/` focus search · `⌘N` new rule · `⌘S` save · `Esc` back
 
-## Install (unpacked)
+## Install
+
+### Auto-install (all browsers, all OSes)
+
+```bash
+bash tools/install.sh
+```
+
+Detects your OS and installed browsers (Chrome, Edge, Brave, Opera, Arc,
+Vivaldi, Chromium, Firefox, Firefox Dev) and opens each to the right page.
+
+For a one-shot temp load (gone after browser quit):
+```bash
+bash tools/install.sh --load-temp
+```
+
+### Manual (unpacked)
 
 1. Open `chrome://extensions`
 2. Toggle **Developer mode** on (top right)
@@ -34,6 +50,8 @@ src/
   lib/rules.js                   rule shape + DNR translation
   sidepanel/                     UI (HTML / CSS / JS)
 tools/make-icons.py              regenerate icons (uv run …)
+tools/install.sh                  cross-browser auto-installer
+tools/test-ui.mjs                 visual smoke test (Playwright)
 ```
 
 ## Regenerating icons
