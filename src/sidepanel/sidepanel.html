@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ModHeaders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <div class="app" id="app" data-view="list">
+      <!-- ============ LIST VIEW ============ -->
+      <header class="topbar" data-view-only="list">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter">
+              <path d="M4 6h16" />
+              <path d="M4 12h10" />
+              <path d="M4 18h16" />
+              <rect x="16" y="10" width="4" height="4" fill="currentColor" stroke="none" />
+            </svg>
+          </span>
+          <div class="brand-text">
+            <span class="brand-name">mod_headers</span>
+            <span class="brand-status" id="statusPill">
+              <span class="dot"></span>
+              <span class="status-label">— rules active</span>
+            </span>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost btn-new" id="addRuleBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            <span>NEW</span>
+          </button>
+          <div class="menu-wrap">
+            <button class="icon-btn" id="menuBtn" title="More options" aria-label="More options" aria-haspopup="menu">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M5 12h.01"/><path d="M12 12h.01"/><path d="M19 12h.01"/></svg>
+            </button>
+            <div class="menu-popover" id="menuPopover" role="menu" hidden>
+              <button data-action="import" role="menuitem">
+                <span class="menu-icon">↧</span>
+                <span>Import rules</span>
+              </button>
+              <button data-action="export" role="menuitem">
+                <span class="menu-icon">↥</span>
+                <span>Export rules</span>
+              </button>
+              <hr />
+              <button data-action="clear" role="menuitem">
+                <span class="menu-icon">×</span>
+                <span>Remove all rules</span>
+              </button>
+            </div>
+          </div>
+          <label class="master-switch" title="Enable / disable all rules">
+            <input type="checkbox" id="masterToggle" checked />
+            <span class="track"><span class="thumb"></span></span>
+          </label>
+        </div>
+      </header>
+
+      <main class="content" data-view-only="list">
+        <div class="search">
+          <span class="search-prefix">/</span>
+          <input id="search" type="search" placeholder="search rules" autocomplete="off" />
+          <kbd class="kbd-hint">/</kbd>
+        </div>
+
+        <div class="rule-list" id="ruleList" role="list"></div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <pre class="empty-art" aria-hidden="true">┌──────────────┐
+│  no rules    │
+│  configured  │
+└──────────────┘</pre>
+          <p>Create a rule to start modifying request or response headers on the sites you visit.</p>
+          <button class="btn btn-primary" id="emptyAddBtn">
+            <span>+</span>
+            <span>Create your first rule</span>
+          </button>
+        </div>
+      </main>
+
+      <!-- ============ EDIT VIEW ============ -->
+      <header class="topbar edit-topbar" data-view-only="edit">
+        <button class="icon-btn" id="backBtn" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="edit-title-wrap">
+          <span class="edit-eyebrow" id="editEyebrow">[ new ]</span>
+          <h1 class="edit-title" id="editTitle">Untitled rule</h1>
+        </div>
+        <button class="btn btn-ghost-danger" id="deleteBtn" hidden>Delete</button>
+      </header>
+
+      <main class="content edit-content" data-view-only="edit">
+        <form id="ruleForm" autocomplete="off" spellcheck="false">
+          <section class="card">
+            <label class="field">
+              <span class="field-label">Name</span>
+              <input id="ruleName" type="text" placeholder="e.g. inject auth on api.example.com" />
+            </label>
+
+            <div class="field-row">
+              <label class="field field-flex-narrow">
+                <span class="field-label">Match</span>
+                <select id="ruleMatchType">
+                  <option value="url">URL contains</option>
+                  <option value="domain">Domain</option>
+                  <option value="regex">Regex</option>
+                </select>
+              </label>
+              <label class="field field-flex-grow">
+                <span class="field-label">Pattern</span>
+                <input id="rulePattern" type="text" placeholder="*://*.example.com/*" />
+              </label>
+            </div>
+
+            <details class="advanced">
+              <summary><span class="caret">▸</span> resource types</summary>
+              <div class="chip-grid" id="resourceTypes"></div>
+            </details>
+          </section>
+
+          <section class="card">
+            <header class="card-head">
+              <h3>[ request headers ]</h3>
+              <button type="button" class="link-btn" data-add-header="request">+ add</button>
+            </header>
+            <div class="header-list" id="requestHeaders"></div>
+            <p class="hint" data-empty-hint="request">— no request headers</p>
+          </section>
+
+          <section class="card">
+            <header class="card-head">
+              <h3>[ response headers ]</h3>
+              <button type="button" class="link-btn" data-add-header="response">+ add</button>
+            </header>
+            <div class="header-list" id="responseHeaders"></div>
+            <p class="hint" data-empty-hint="response">— no response headers</p>
+          </section>
+
+          <div class="preview" id="previewBox" hidden>
+            <span class="preview-label">// preview</span>
+            <code id="previewText"></code>
+          </div>
+        </form>
+      </main>
+
+      <footer class="edit-footer" data-view-only="edit">
+        <label class="enabled-toggle">
+          <input type="checkbox" id="ruleEnabled" checked />
+          <span class="track sm"><span class="thumb"></span></span>
+          <span class="enabled-label">Enabled</span>
+        </label>
+        <button class="btn btn-secondary" id="cancelBtn" type="button">Cancel</button>
+        <button class="btn btn-primary" id="saveBtn" type="button">
+          <span>Save rule</span>
+          <kbd class="kbd-hint inline">⌘S</kbd>
+        </button>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+    <input type="file" id="importFile" accept="application/json" hidden />
+
+    <template id="headerRowTemplate">
+      <div class="header-row">
+        <select class="op">
+          <option value="set">set</option>
+          <option value="append">append</option>
+          <option value="remove">remove</option>
+        </select>
+        <input class="header-name" type="text" placeholder="Header-Name" />
+        <input class="header-value" type="text" placeholder="value" />
+        <button type="button" class="icon-btn icon-btn-sm remove-row" aria-label="Remove header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M6 6l12 12"/><path d="M18 6l-12 12"/></svg>
+        </button>
+      </div>
+    </template>
+
+    <template id="ruleCardTemplate">
+      <article class="rule-card" role="listitem">
+        <div class="rule-card-main">
+          <div class="rule-card-head">
+            <h3 class="rule-name"></h3>
+            <label class="enabled-toggle compact">
+              <input type="checkbox" class="rule-toggle" />
+              <span class="track sm"><span class="thumb"></span></span>
+            </label>
+          </div>
+          <div class="rule-card-meta">
+            <span class="match-badge"></span>
+            <span class="rule-pattern"></span>
+          </div>
+          <p class="rule-summary"></p>
+        </div>
+        <div class="rule-card-actions">
+          <button type="button" class="link-btn duplicate-btn">duplicate</button>
+          <button type="button" class="link-btn edit-btn">edit →</button>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>
